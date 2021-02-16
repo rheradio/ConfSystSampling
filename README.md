@@ -1,6 +1,6 @@
 # Uniform and Scalable Sampling of Highly Configurable Systems
 
-Software artifacts of the following paper submitted for publication to Empirical Software Engineering::
+Software artifacts of the following paper submitted for publication to Empirical Software Engineering (2021):
 
 *Ruben Heradio, David Fernandez-Amoros, José Galindo, David Benavides, and Don Batory*. 
 **Uniform and Scalable Sampling of Highly Configurable Systems.**
@@ -37,7 +37,7 @@ The syntax to run all scripts is:
 
 Where `directory_name` is the folder that stores the models. Models can be downloaded at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919).
 
-[run_samplers.r](https://github.com/rheradio/sat_sampling/blob/master/scripts/run_samplers.r) requires to have installed the following programs:
+[run_samplers.r](https://github.com/rheradio/ConfSystSampling/blob/main/scripts/run_samplers.r) requires to have installed the following programs:
 
 * [BDDSampler](https://github.com/davidfa71/BDDSampler)
 * [histogram](https://github.com/rheradio/VMStatAnal)
