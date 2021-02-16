@@ -15,9 +15,9 @@ This repository is organized into two main directories:
 
 * [scripts](https://github.com/rheradio/ConfSystSampling/tree/main/scripts), includes the R scripts to replicate our experimental validation (i.e., to calculate each model's sample size, run the samplers, and test the scalability/uniformity of the samplers).
 * [reports](https://github.com/rheradio/ConfSystSampling/tree/main/reports), includes detailed experimental results in order to answer the following Research Questions:
-  + *RQ1: Samplers' scalability*. Are BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 able to generate samples out of any size models within a moderate running time?
-  + *RQ2: Scalability of our SAT-solution distribution goodness-of-fit test*. Does the test presented in this paper require fewer configurations than any other state-of-the-art method for checking samplers' uniformity?
-  + *RQ3: Samplers' uniformity*. Do BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 generate uniform SAT solutions?
+  + (RQ1: Samplers' scalability)[https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq1_samplers_scalability.html]. Are BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 able to generate samples out of any size models within a moderate running time?
+  + (RQ2: Scalability of our SAT-solution distribution goodness-of-fit test)[https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq2_goodness_of_fit_scalability.html]. Does the test presented in this paper require fewer configurations than any other state-of-the-art method for checking samplers' uniformity?
+  + (RQ3: Samplers' uniformity)[https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq3_samplers_uniformity.html]. Do BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 generate uniform SAT solutions?
    
 The benchmark we used, and all the samples generated are available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919). There is a zip file per model, which is organized into the following directories:
 
@@ -31,7 +31,7 @@ The benchmark we used, and all the samples generated are available at [![DOI](ht
 
 ![Schema summarizing the scripts' workflow](https://github.com/rheradio/ConfSystSampling/blob/main/doc/scripts_workflow_schema.svg)
 
-The syntax to run all scripts is:
+The syntax to run the ".r" scripts is:
 
 `Rscript script_name.r directory_name`
 
@@ -49,3 +49,5 @@ Where `directory_name` is the folder that stores the models. Models can be downl
 * [Unigen2](https://bitbucket.org/kuldeepmeel/unigen)
 
 Also, at the beginning of [run_samplers.r](https://github.com/rheradio/sat_sampling/blob/master/scripts/run_samplers.r) you'll have to configure the constants BDD_SAMPLER, KUS_dir, QUICK_SAMPLER, QUICK_SAMPLER_VALID, SMARCH, SPUR, UNIGEN2_dir, and UNIGEN2 according to the locations where you have installed the samplers.
+
+To run the ".Rmd" scripts [rmarkdown](https://rmarkdown.rstudio.com/articles_report_from_r_script.html) is needed
