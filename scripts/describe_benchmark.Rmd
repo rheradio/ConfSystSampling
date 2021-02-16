@@ -1,0 +1,148 @@
+---
+title: "Benchmark"
+author: "Ruben Heradio (rheradio@issi.uned.es)"
+date: "Date: `r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: journal
+bibliography: references.bib    
+csl: ieee.csl    
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+```
+
+# Initialization
+
+## Importing packages and installing them if needed
+
+```{r package_import, results='hide', warning=FALSE}
+REQUIRED_PACKAGES <- 
+  c("tidyverse", "gridExtra", "grid", "directlabels", "ggrepel","splines", "modelr", "broom", "psych")
+lapply(
+  REQUIRED_PACKAGES,
+  function(pkg) {
+    print(pkg)
+    if (system.file(package = pkg) == "") {
+      install.packages(pkg,
+                       repos = "http://cran.us.r-project.org"
+      )
+    }
+    do.call("library", list(pkg))
+  }
+)
+```
+```{r}
+sessionInfo()
+```
+
+```{r global-constants-and-variables-initialization}
+MODELS_PATH <- "../data"
+SAT_DIST_STATS <- "samplers_stats.csv"
+MODELS_EXTENSIONS <-
+  c("bdd", "kus", "quicksampler", "smarch", "spur", "unigen2")
+models <- list.dirs(path = MODELS_PATH, 
+                    full.names = FALSE, 
+                    recursive = FALSE)
+SAMPLER_COLORS <- c("#E91E63", "#7EBD5E", "#3388CC", "#FA9D0D", "#666666", "#FF6E66")
+SPL_MODELS <- c("axtls", "busybox", "DellSPLOT", "embtoolkit-onlybool", "fiasco", 
+                "jhipster", "LargeAutomotive", "toybox", "uClibc")
+FORMATTED_SPL_MODELS <- c("axTLS", "BusyBox", "DellSPLOT", "EmbToolkit", "Fiasco", 
+                          "JHipster", "LargeAutomotive", "ToyBox", "uClibc")
+```
+
+# Benchmark 
+
+
+The samplers were tested against a benchmark composed of 218 models encoded as Boolean formulas (CNFs, BDDs, and SDDs). Nine of the 218 models represent configurable software systems. The remaining models are industrial SAT formulas (mostly modeling integrated circuits) that are typically used as a benchmark in the SAT-sampling literature [@Chakraborty15; @Achlioptas18; @Plazar19].
+
+## The number of variables and clauses are highly correlated
+
+```{r benchmark-vars-and-clauses-correlation}
+# Load benchmark information
+samp_data <- read_delim(str_c(MODELS_PATH, "/", SAT_DIST_STATS), delim=";")
+
+# Transform variables and clauses into logarithmic scale
+log_data <- log2(samp_data[colnames(samp_data) %in% c("vars", "clauses")])
+colnames(log_data)[3:8] <- c("BDDSampler", "QuickSampler", "Smarch", "Spur", "Unigen2", "KUS")
+log_data$model <- samp_data$model
+
+# SPL models
+spl_models <- log_data %>%
+  filter(model %in% SPL_MODELS) %>%
+  mutate(model = FORMATTED_SPL_MODELS)
+
+# Correlation and linear regression
+print("Pearson's r:")
+with(log_data, cor(clauses, vars))
+clauses_vars_mdl <- lm(clauses ~ vars, data=log_data)
+summary(clauses_vars_mdl)
+
+# Represent a scatter-plot
+
+clauses_vars_data <- log_data %>% 
+  add_predictions(clauses_vars_mdl, "pred_clauses") %>%
+  mutate(few_clauses=ifelse(clauses < pred_clauses, TRUE, FALSE))
+
+var_vs_clauses_plot <- ggplot(clauses_vars_data, aes(x=vars, y=clauses)) +
+  geom_smooth(se=FALSE, method = "lm", color="grey", alpha=0.5) +
+  scale_color_manual(values=c("#E91E63", "#3388CC", "#FA9D0D", "#666666", "#FF6E66")) +
+  geom_point(aes(color=few_clauses), size=2, alpha=0.3, show.legend = FALSE) +
+  geom_label_repel(data=spl_models, aes(label=model), nudge_x = -3, nudge_y=4,
+                   size = 3, label.padding = 0.15, force=2000, max.time=600) +
+  geom_point(data=spl_models, size=2, shape=1, show.legend = FALSE) +
+  scale_x_continuous(breaks=seq(2,16, by=2)) +
+  scale_x_continuous(breaks=seq(2,16, by=2)) +
+  theme_minimal() +
+  labs(
+    x = expression(Log[2]("#Variables")),
+    y = expression(Log[2]("#Clauses")),
+    subtitle = "The number of variables and clauses are \nhighly correlated (Pearsons' r=0.97)"
+  ) 
+
+# Represent a histogram
+
+quantiles <- log2(quantile(samp_data$vars, c(0.075, 0.925)))
+var_plot <- ggplot(clauses_vars_data, aes(x=vars)) +
+  geom_rect(xmin=quantiles[1], xmax=quantiles[2], ymin=0, ymax=Inf, fill="#FA9D0D", alpha=0.02) +
+  geom_histogram(bins=30, col="#666666", alpha=0.75, size=0.1) +
+  scale_x_continuous(breaks=seq(2,16, by=2)) +
+  scale_y_continuous(breaks=seq(0,40, by=20)) +
+  theme_minimal() +
+  labs(
+    x = expression(Log[2]("#Variables")),
+    y = "#Models",
+    subtitle = "85% of the models have between 52 and 928 \nvariables (5.70 and 9.86 in logarithmic scale)"
+  ) 
+
+complete_plot <- grid.arrange(
+  var_plot,
+  var_vs_clauses_plot,
+  ncol = 1,
+  nrow = 2,
+  heights = c(1,2)
+)
+
+cairo_pdf("clauses_vs_varss.pdf", width = 4, height = 4.5)
+complete_plot
+dev.off()
+```
+
+## Detailed information
+
+The following table summarizes the benchmark.
+
+```{r benchmark-in-detail}
+samp_data_detailed <- samp_data %>%
+  select(model, vars, clauses) %>%
+  arrange(vars)
+knitr::kable(samp_data_detailed)
+```
+
+# References
+

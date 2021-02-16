@@ -1,0 +1,407 @@
+---
+title: "RQ3: Samplers' uniformity"
+author: "Ruben Heradio (rheradio@issi.uned.es)"
+date: "Date: `r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: journal
+bibliography: references.bib    
+csl: ieee.csl     
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Initialization
+
+## Importing packages and installing them if needed
+
+```{r package_import, results='hide', warning=FALSE}
+REQUIRED_PACKAGES <- 
+  c("tidyverse", "gridExtra", "grid", "directlabels", "ggrepel","splines", 
+    "modelr", "scales", "kableExtra")
+lapply(
+  REQUIRED_PACKAGES,
+  function(pkg) {
+    print(pkg)
+    if (system.file(package = pkg) == "") {
+      install.packages(pkg,
+                       repos = "http://cran.us.r-project.org"
+      )
+    }
+    do.call("library", list(pkg))
+  }
+)
+```
+```{r}
+sessionInfo()
+```
+
+## Model constants and variables initialization
+
+```{r global-constants-and-variables-initialization}
+MODELS_PATH <- "../data"
+MODELS_EXTENSIONS <-
+  c("bdd", "kus", "quicksampler", "smarch", "spur", "unigen2")
+models <- list.dirs(path = MODELS_PATH, 
+                    full.names = FALSE, 
+                    recursive = FALSE)
+SAMPLER_COLORS <- c("#E91E63", "#7EBD5E", "#3388CC", "#FA9D0D", "#666666", "#FF6E66")
+SPL_MODELS <- c("axtls", "busybox", "DellSPLOT", "embtoolkit-onlybool", "fiasco", 
+                "jhipster", "LargeAutomotive", "toybox", "uClibc")
+FORMATTED_SPL_MODELS <- c("axTLS", "BusyBox", "DellSPLOT", "EmbToolkit", "Fiasco", 
+                          "JHipster", "LargeAutomotive", "ToyBox", "uClibc")
+SAMPLERS <- c("BDDSampler", "KUS", "QuickSampler", "Smarch", "Spur", "Unigen2")
+```
+
+## Auxiliary functions and variables for plots 
+
+```{r aux-functions-and-plot-vars}
+pretty_name <- function(id) {
+  if (id == "bdd") {
+    "BDDSampler"  
+  } else if (id == "quicksampler") {
+    "Quicksampler"
+  } else if (id == "smarch") {
+    "Smarch"
+  } else if (id == "spur") {
+    "Spur"
+  } else if (id == "unigen2") {
+    "Unigen2"
+  } else if (id == "kus") {
+    "KUS"
+  } else {
+    stop("error in pretty_name")
+  }
+}
+
+g_legend <- function(a.gplot){ 
+  tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
+  legend <- tmp$grobs[[leg]] 
+  legend
+} 
+
+blank_plot <-
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+  )
+
+```
+
+## Analysis result tibble initialization
+
+```{r result-tibble-initialization}
+analysis_results <- 
+  tibble(model = character(), 
+         bdd_jsd = numeric(), 
+         bdd_p_value = numeric(), 
+         kus_jsd = numeric(), 
+         kus_p_value = numeric(),
+         quicksampler_jsd = numeric(), 
+         quicksampler_p_value = numeric(), 
+         smarch_jsd = numeric(), 
+         smarch_p_value = numeric(), 
+         spur_jsd = numeric(), 
+         spur_p_value = numeric(), 
+         unigen2_jsd = numeric(), 
+         unigen2_p_value = numeric()
+  )
+```
+
+# Goodness-of-fit tests
+
+## *Kullback–Leibler divergence* 
+
+For discrete probability distributions $P$ and $Q$ defined on the same probability space $\mathcal{X}$, the Kullback–Leibler divergence [@Cover06] from $Q$ to $P$ is defined as:
+
+$$D_\mathrm{KL}(P||Q)=\sum_{x \in \mathcal{X}} P(x)\mathrm{log}_2\Big{(}\frac{P(x)}{Q(x)}\Big{)}$$
+
+For the extreme cases, where $P(x)$ or $Q(x)$ are equal to zero, the directions given by [Drost(2018)](https://cran.r-project.org/web/packages/philentropy/index.html) are followed.
+
+```{r Kullback-Leibler-Divergence}
+kullback_leibler_divergence <- function(p, q) {
+  Q_adjustment <- 0.00001
+  kld <- function(x, y) {
+    if (x == 0) {
+      0
+    } else if (y == 0) {
+      x*log(x/Q_adjustment, base=2)
+    } else {
+      x*log(x/y, base=2)
+    }
+  }
+  sum(map2_dbl(p, q, kld))
+}
+```
+
+## *Jensen–Shannon divergence* (also known as *information radius* and *total divergence to the average*)
+
+The Jensen–Shannon divergence (JSD) is a symmetrized and smoothed version of the Kullback–Leibler divergence [@Cover06] defined as:
+$$\mathrm{JSD(P||Q)}=\frac{1}{2}D_\mathrm{KL}(P||M)+\frac{1}{2}D_\mathrm{KL}(Q||M)$$
+where $M=\frac{1}{2}(P+Q)$
+
+```{r Jensen–Shannon-divergence}
+jensen_shannon_divergence <- function(p, q) {
+  m <- (p+q)/2
+  jsd <- kullback_leibler_divergence(p,m)/2 + kullback_leibler_divergence(q,m)/2
+  ifelse(jsd<1, jsd, 1)
+}
+
+```
+
+Let $s$ be the sample size, and $m$ the number of elements in $P$ that are neither zero nor one (e.g., the JHipster model has 45 features, there are seven core features and no dead features, so $m=38$). According to the proof given by Grosse et al. in Section 4.C of [@Grosse02], $2 s (\mathrm{ln} 2) D(F, P)$ has a $\chi^2$ distribution with $m-1$ degrees of freedom. As a result, a \emph{Chi-Squared goodness-of-fit test} [@DAgostino86] built upon the statistic $2 s (\mathrm{ln} 2) D(F, P)$ will help us to decide whether the sampler is uniform.
+
+```{r goodness-of-fit-tests}
+for (m in models) {
+  
+  writeLines(str_c("Goodness of fit test of ", m))
+
+  # Create and initialize variables to store divergences and p-values
+  for (ext in MODELS_EXTENSIONS) {
+    eval(parse(text=str_c(ext, "_jsd <- NA")))
+    eval(parse(text=str_c(ext, "_p_value <- NA")))
+  }
+
+  # Import the model theoretical distribution
+  th_path <- str_c(MODELS_PATH,
+                   "/",
+                   m,
+                   "/population_desc")
+  theoretical_distribution <- read_delim(
+    file = str_c(th_path, "/", m, ".satdist"),
+    delim = " ",
+    col_names = FALSE,
+    col_types = cols(
+      col_integer(),
+      col_character()
+    )
+  )
+  colnames(theoretical_distribution) <- c("feature_num", "absolute_freqs")
+
+  # Compute the theoretical probabilities
+  absolute_freqs <- gmp::as.bigz(theoretical_distribution$absolute_freqs)
+  total_solutions <- sum(absolute_freqs)
+  theoretical_distribution$probabilities <-
+    as.numeric(absolute_freqs/total_solutions)
+  total_solutions <- as.numeric(total_solutions)
+  theoretical_distribution <- theoretical_distribution %>%
+    select("feature_num", "probabilities")
+  
+  # Analysis of each sampler
+  plot_index <- 0
+  histograms <- list()
+  for (ext in MODELS_EXTENSIONS) {
+    plot_index <- plot_index + 1
+
+    # Import sample
+    file_name <- str_c(MODELS_PATH,
+                       "/",
+                       m,
+                       "/std_samples/",
+                       m, "_satdist.", ext)
+    if (!file.exists(file_name)) {
+      empty_plot <-
+        ggplot()+
+        ggtitle(pretty_name(ext)) +
+        annotate(geom="text", x=3, y=30, label="<< time out >>",
+                 color="#E91E63",
+                 size=8) +
+        blank_plot
+      histograms[[plot_index]] <- empty_plot
+      next()
+    }    
+    sample <- read_delim(
+      file = file_name,
+      delim = ";",
+      col_names = TRUE,
+      col_types = cols(
+        col_integer()
+      )
+    )
+    colnames(sample) <- "feature_num"
+
+    # Compute empirical frequencies
+    empirical_distribution <- sample %>%
+      count(feature_num) %>%
+      mutate(absolute_freqs = n) %>% 
+      arrange(feature_num) 
+    sample_size <- nrow(sample) 
+    empirical_distribution$frequencies <-
+      empirical_distribution$absolute_freqs/sample_size
+    empirical_distribution <- empirical_distribution %>%
+      select(feature_num, frequencies)
+
+    # Join theoretical and empirical information
+    distributions <- left_join(
+      theoretical_distribution,
+      empirical_distribution, 
+      by="feature_num") 
+    # Set NA's in the empirical distribution to zero
+    distributions[is.na(distributions$frequencies),]$frequencies <- 0
+    # Remove rows with no configurations
+    distributions <- filter(distributions, probabilities>0) 
+    # Get jensen shannon divergence
+    jsd <- jensen_shannon_divergence(distributions$probabilities,
+                                     distributions$frequencies)
+    # Get goodness-of-fit p-value
+    X2 <- 2*sample_size*log(2)*jsd
+    degrees_of_freedom <- nrow(distributions)-1
+    p_value <- 1-pchisq(X2, degrees_of_freedom)
+    
+    # Store jsd and p_values in their corresponding variables
+    eval(parse(text=str_c(ext, "_jsd <- ", jsd)))
+    eval(parse(text=str_c(ext, "_p_value <- ", p_value)))
+    
+    # Prepare distribution data for plotting
+    histogram <- gather(distributions, 
+                        probabilities, frequencies, 
+                        value="pr", key="Distribution")
+    levels <- c("probabilities", "frequencies")
+    histogram$Distribution <- factor(histogram$Distribution, levels=levels)
+    histogram$Distribution <- fct_recode(histogram$Distribution, 
+                                 "Theoretical" = "probabilities",
+                                 "Empirical" = "frequencies"
+                                )
+    # Generate the histogram
+    histograms[[plot_index]] <- 
+      ggplot(histogram, 
+        aes(x=feature_num, y=pr, fill=Distribution, col=Distribution)) +
+        scale_fill_manual(values=c("#3388CC", "#E91E63")) +
+        scale_color_manual(values=c("#3388CC", "#E91E63")) +
+        geom_col(alpha=0.5, size=0.1, position="dodge2") +
+        scale_x_continuous("#True variables per SAT-solution")+#, 
+        scale_y_continuous("Probability")+
+        ggtitle(pretty_name(ext))
+
+  } # for (ext in MODELS_EXTENSIONS)
+  
+  analysis_results <- analysis_results %>%
+    add_row(model = m, 
+            bdd_jsd = bdd_jsd, 
+            bdd_p_value = bdd_p_value, 
+            kus_jsd = kus_jsd, 
+            kus_p_value = kus_p_value,
+            quicksampler_jsd = quicksampler_jsd, 
+            quicksampler_p_value = quicksampler_p_value, 
+            smarch_jsd = smarch_jsd, 
+            smarch_p_value = smarch_p_value, 
+            spur_jsd = spur_jsd, 
+            spur_p_value = spur_p_value, 
+            unigen2_jsd = unigen2_jsd, 
+            unigen2_p_value = unigen2_p_value
+    )
+  
+  legend <- g_legend(histograms[[1]])
+  for (i in 1:6) {
+    histograms[[i]] <- histograms[[i]] + 
+    theme(legend.position = "none")
+  }
+  histograms_plot <- arrangeGrob(
+      arrangeGrob(textGrob(
+                    m, 
+                    gp = gpar(fontsize = 18, font=2)), 
+                  legend,
+                  nrow=1, ncol=2,
+                  widths=c(2,1)), 
+      arrangeGrob(
+        histograms[[1]], histograms[[2]], histograms[[3]], 
+        histograms[[4]], histograms[[5]], histograms[[6]],
+        nrow=2),
+      nrow=2,
+      heights=c(1,6)
+    )
+  grid.arrange(histograms_plot)
+  file_name <- str_c(MODELS_PATH,
+                     "/",
+                     m,
+                     "/goodness_of_fit/",
+                     m,
+                     "_hist.pdf")
+  ggsave(file_name, histograms_plot, width=15, height=6)
+  grid.arrange(histograms_plot)
+} # for (m in models)
+```
+
+# General overview
+
+```{r test-results-overview}
+overview <- analysis_results[,seq(1,13,by=2)] 
+colnames(overview)[2:7] <- SAMPLERS
+rejected <- rep(0, 6)
+for(i in 2:7) {
+  non_nan_p_values <- overview[[i]][!is.na(overview[[i]])]
+  rejected[i-1] <- 100*sum(non_nan_p_values<0.01)/length(non_nan_p_values)
+}
+rejected_summary <- tibble(
+  sampler = SAMPLERS,
+  rejected = str_c(round(rejected, 2), "% rejected")
+)
+for (i in 2:7) {
+  overview[[i]] <- cut(overview[[i]], breaks=seq(0, 1, by=0.1), include.lowest=TRUE, na.rm=TRUE)
+}
+overview <- overview %>% 
+  gather(2:7, key="sampler", value="p_value") %>%
+  filter(!is.na(p_value))
+models_per_sampler <- overview %>% 
+  group_by(sampler) %>%
+  summarize(total=n())
+p_values_per_sampler <- overview %>%
+    group_by(sampler, p_value) %>%
+    summarize(p_value_count=n())
+summary_table <- 
+  inner_join(models_per_sampler, p_values_per_sampler) %>%
+  mutate(percentage = 100*p_value_count/total) 
+levels <- c("[0,0.1]", "(0.1,0.2]", "(0.2,0.3]", "(0.3,0.4]", "(0.5,0.6]", "(0.6,0.7]",
+            "(0.7,0.8]", "(0.8,0.9]", "(0.9,1]")
+summary_table$p_value <- factor(summary_table$p_value, levels=levels)
+ggplot(summary_table, aes(x=p_value, y=percentage, fill=sampler)) +
+  scale_fill_manual(values=SAMPLER_COLORS) +
+  geom_bar(stat="identity", color="black", size=0.1) +
+  facet_wrap(.~sampler) +
+  geom_text(x = 5, y = 70, aes(label = rejected), data = rejected_summary, size=3) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text (angle=60, hjust=1)) +
+  scale_x_discrete("p-value") +
+  scale_y_continuous("%Samples") 
+ggsave("test_results.pdf", width = 4.8, height = 3.5)
+```
+
+# Detailed goodness-of-fit test results
+
+In the following table:
+
+- **bdd**_*jsd* and **bdd**_*p_value* stand for the *Jensen-Shanon divergences* and *p-values* obtained with **BDDSampler**, respectively.
+- **kus**_*jsd* and **kus**_*p_value* stand for the *Jensen-Shanon divergences* and *p-values* obtained with **KUS**, respectively.
+- ...
+- **unigen2**_*jsd* and **unigen2**_*p_value* stand for the *Jensen-Shanon divergences* and *p-values* obtained with **Unigen2**, respectively.
+
+```{r result-tibble-storage}
+write.table(
+  analysis_results,
+  file = str_c(MODELS_PATH,"/goodness_of_fit.csv"),
+  sep = ";",
+  row.names = FALSE
+)
+knitr::kable(analysis_results)
+```
+
+```{r eval=FALSE, echo=FALSE}
+# Code to generate the paper latex table
+spl_models <- analysis_results %>%
+  filter(model %in% SPL_MODELS) %>%
+  mutate(model = FORMATTED_SPL_MODELS) 
+spl_models <- spl_models[,seq(1,13,by=2)]
+kbl(spl_models, format="latex", digits=2, align="l", booktabs =TRUE)
+```
+# References

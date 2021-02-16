@@ -1,0 +1,235 @@
+---
+title: "RQ1: Samplers' scalability"
+author: "Ruben Heradio (rheradio@issi.uned.es)"
+date: "Date: `r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: journal
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+```
+
+# Initialization
+
+## Importing packages and installing them if needed
+
+```{r package_import, results='hide', warning=FALSE}
+REQUIRED_PACKAGES <- 
+  c("tidyverse", "gridExtra", "grid", "directlabels", "ggrepel","splines", "modelr", "broom", "psych", "kableExtra", "scales")
+lapply(
+  REQUIRED_PACKAGES,
+  function(pkg) {
+    print(pkg)
+    if (system.file(package = pkg) == "") {
+      install.packages(pkg,
+                       repos = "http://cran.us.r-project.org"
+      )
+    }
+    do.call("library", list(pkg))
+  }
+)
+```
+```{r}
+sessionInfo()
+```
+
+```{r global-constants-and-variables-initialization}
+MODELS_PATH <- "../../data"
+SAT_DIST_STATS <- "samplers_stats_1000_confs.csv"
+MODELS_EXTENSIONS <-
+  c("bdd", "kus", "quicksampler", "smarch", "spur", "unigen2")
+models <- list.dirs(path = MODELS_PATH, 
+                    full.names = FALSE, 
+                    recursive = FALSE)
+SAMPLER_COLORS <- c("#E91E63", "#7EBD5E", "#3388CC", "#FA9D0D", "#666666", "#FF6E66")
+SAMPLER_PRETTY_NAMES <- c("BDDSampler", "QuickSampler", "Smarch", "Spur", "Unigen2", "KUS")
+SPL_MODELS <- c("axtls", "busybox", "DellSPLOT", "embtoolkit-onlybool", "fiasco", 
+                "jhipster", "LargeAutomotive", "toybox", "uClibc")
+FORMATTED_SPL_MODELS <- c("axTLS", "BusyBox", "DellSPLOT", "EmbToolkit", "Fiasco", 
+                          "JHipster", "LargeAutomotive", "ToyBox", "uClibc")
+```
+
+# Experiment results
+
+1000 configurations...
+
+## Time for generating samples with 1,000 configurations (graphical summary)
+
+```{r }
+samp_data <- read_delim(str_c(MODELS_PATH, "/", SAT_DIST_STATS), delim=";")
+
+# Transform vars, clauses, and times to log2 scale
+log_data <- log2(samp_data[colnames(samp_data) %in% c("vars", "clauses", str_c(MODELS_EXTENSIONS, "_time"))])
+colnames(log_data)[3:8] <- SAMPLER_PRETTY_NAMES
+log_data$model <- samp_data$model
+
+# SPL models
+spl_models <- log_data %>%
+  filter(model %in% SPL_MODELS) %>%
+  mutate(model = FORMATTED_SPL_MODELS)
+
+# Regression models
+BDDSampler <- MASS::rlm(BDDSampler ~ ns(vars,20), data=log_data)
+KUS <- MASS::rlm(KUS ~ ns(vars,20), data=log_data)
+QuickSampler <- MASS::rlm(QuickSampler ~ ns(vars,25), data=log_data)
+Smarch <- MASS::rlm(Smarch ~ ns(vars,7), data=log_data)
+Spur <- MASS::rlm(Spur ~ ns(vars, 20), data=log_data)
+Unigen2 <- MASS::rlm(Unigen2 ~ ns(vars, 10), data=log_data)
+
+grid <- data_grid(log_data, vars = seq_range(vars, n=100, expand=0.1, pretty=TRUE)) %>% 
+  gather_predictions(BDDSampler, KUS, QuickSampler, Smarch, Spur, Unigen2)
+colnames(grid)[1] <- "sampler"  
+
+log_data <- log_data %>% 
+  gather(BDDSampler, KUS, QuickSampler, Smarch, Spur, Unigen2, 
+         key="sampler", 
+         value="time" )
+smarch_limits <- log_data %>% 
+  filter(sampler=="Smarch") %>%
+  filter(!is.na(time)) %>%
+  summarize(min=min(vars), max = max(vars))
+unigen2_limits <- log_data %>% 
+  filter(sampler=="Unigen2") %>%
+  filter(!is.na(time)) %>%
+  summarize(min=min(vars), max = max(vars))
+
+grid <- grid %>%
+  filter(
+    (sampler %in% c("BDDSampler", "QuickSampler", "Spur", "KUS")) |
+    ( (sampler == "Smarch") & (vars<=smarch_limits$max)) |
+    ( (sampler == "Unigen2") & (vars<=unigen2_limits$max)) 
+  )
+
+points <- ggplot(log_data, aes(x=vars, y=time, color=sampler)) +
+  scale_color_manual(values=SAMPLER_COLORS) +
+  geom_point(alpha=0.2, show.legend = FALSE) +
+  geom_line(data=grid, aes(y=pred), col="black", alpha=0.3, show.legend = FALSE)+
+  facet_wrap(sampler~.) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  labs(
+    x = expression(Log[2]("#Variables")),
+    y = expression(Log[2]("Time in seconds")),
+    subtitle = "Time for generating samples with 1,000 configurations \n(timeout = 1 hour)"
+  ) +
+  scale_x_continuous(breaks=seq(2,16, by=2)) 
+points
+
+labels <- grid %>% 
+  group_by(sampler) %>% 
+  summarize(max(vars))
+colnames(labels)[2] <- "vars"
+labels <- left_join(labels, grid)
+
+mean_preds <- grid %>% 
+  mutate(sampler_group = ifelse(sampler %in% c("Smarch", "Unigen2"), "slow", "fast")) %>%
+  group_by(sampler_group, vars) %>%
+  summarize(mean_pred = mean(pred))
+print("There are two groups of samplers: (i) the fast ones are BDDSampler, KUS, QuickSampler, and Spur; (ii) the slow samplers are Smarch and Unigen2")
+print("Let's check their group performance...")
+describeBy(mean_preds, group=mean_preds$sampler_group, na.rm=TRUE)
+
+regression_curves <- 
+  ggplot(grid, aes(x=vars, y=pred, color=sampler)) +
+  scale_color_manual(values=SAMPLER_COLORS) +
+  geom_line(data=grid, aes(y=pred), alpha=0.7, show.legend = FALSE) +
+  geom_text_repel(
+    data = labels,
+    aes(label = sampler),
+    size = 3.25,
+    hjust = 0.2,
+    direction = "y",
+    nudge_x = 1.25,
+    nudge_y = 0.1,
+    segment.color = NA,
+    show.legend = FALSE
+    ) +
+  geom_point(data=labels, show.legend = FALSE, shape=18) +
+  coord_cartesian(xlim=c(3,18)) +
+  theme_minimal() +
+  labs(
+    x = expression(Log[2]("#Variables")),
+    y = expression(Log[2]("Time in seconds")),
+    subtitle = "Comparing the regression curves, Smarch and Unigen2\nare considerably slower than the other samplers"
+  ) +
+  scale_x_continuous(breaks=seq(2,14, by=2)) +
+  geom_line(data=mean_preds, 
+            aes(x=vars, y=mean_pred, group=sampler_group), 
+            color="#7B2BF5",
+            size=11,
+            #linetype = 5,#"longdashed",
+            linetype = 1,#"longdashed",
+            alpha=0.18)
+regression_curves
+
+# cairo_pdf("time_analysis.pdf", width = 4.32, height = 5.5)
+# grid.arrange(
+#   points,
+#   regression_curves,
+#   ncol = 1,
+#   nrow = 2,
+#   heights = c(2.5,1.7)
+# )
+# dev.off()
+```
+
+## Percentage of samples that each sampler was able to generate
+
+```{r percentage-of-samples}
+perc_data <- samp_data[colnames(samp_data) %in% str_c(MODELS_EXTENSIONS, "_time")]
+colnames(perc_data) <- SAMPLER_PRETTY_NAMES
+
+samples_generated <- log_data %>% 
+  group_by(sampler) %>% 
+  summarize(percentage = 100*sum(!is.na(time))/nrow(samp_data)) %>%
+  mutate(sampler = factor(sampler, 
+                          levels=rev(c("BDDSampler", "QuickSampler", "Spur", 
+                                       "KUS", "Unigen2", "Smarch")))) 
+ADJ_SAMPLER_COLORS <- rev(c("#E91E63", "#3388CC", "#666666", "#7EBD5E", "#FF6E66", "#FA9D0D"))
+  
+ggplot(samples_generated, aes(x=sampler, y=percentage, fill=sampler)) +
+  scale_fill_manual(values=ADJ_SAMPLER_COLORS)+
+  geom_bar(stat="identity", col="black", size=0.1) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text (angle=60, hjust=1)) +
+  scale_x_discrete("Sampler") +
+  scale_y_continuous("%Samples", breaks=seq(0,100,10)) +
+  coord_flip()
+ggsave("samplers_percentage.pdf", width = 3.5, height = 1.7)
+
+```
+
+
+## Detailed information
+
+```{r detail}
+samp_data_detailed <- samp_data %>%
+  arrange(vars)
+knitr::kable(samp_data_detailed)
+```
+
+```{r eval=FALSE, echo=FALSE}
+# Code to generate the paper latex table
+numbers_with_comma <- format_format(big.mark = ",", decimal.mark = ".", scientific = FALSE)
+spl_models <- arrange(spl_models, vars)
+spl_for_latex <- with(spl_models,
+  tibble(
+    model = model,
+    BDDSampler = numbers_with_comma(round(2**BDDSampler, 2)),
+    KUS = numbers_with_comma(round(2**KUS, 2)),
+    QuickSampler = numbers_with_comma(round(2**QuickSampler, 2)),
+    Smarch = numbers_with_comma(round(2**Smarch, 2)),
+    Spur = numbers_with_comma(round(2**Spur, 2)),
+    Unigen2 = numbers_with_comma(round(2**Unigen2, 2))
+  )
+)
+kbl(spl_for_latex, format="latex", align="l", booktabs =TRUE)
+```
+
