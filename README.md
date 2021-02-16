@@ -29,7 +29,7 @@ The benchmark we used, and all the samples generated are available at [![DOI](ht
 
 ## Script code
 
-![Schema summarizing the scripts' workflow](https://github.com/rheradio/ConfSystSampling/blob/main/doc/scripts_workflow_schema.svg)
+![Schema summarizing the scripts' workflow: see https://github.com/rheradio/ConfSystSampling](https://github.com/rheradio/ConfSystSampling/blob/main/doc/scripts_workflow_schema.svg)
 
 The syntax to run the ".r" scripts is:
 
