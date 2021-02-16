@@ -15,7 +15,7 @@ This repository is organized into two main directories:
 
 * [scripts](https://github.com/rheradio/ConfSystSampling/tree/main/scripts), includes the R scripts to replicate our experimental validation (i.e., to calculate each model's sample size, run the samplers, and test the scalability/uniformity of the samplers).
 * [reports](https://github.com/rheradio/ConfSystSampling/tree/main/reports), includes detailed experimental results in order to answer the following Research Questions:
-  + [RQ1: Samplers' scalability](https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq1_samplers_scalability.html). Are BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 able to generate samples out of any size models within a moderate running time?
+  + [RQ1: Samplers' scalability](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq1_samplers_scalability.html). Are BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 able to generate samples out of any size models within a moderate running time?
   + [RQ2: Scalability of our SAT-solution distribution goodness-of-fit test](https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq2_goodness_of_fit_scalability.html). Does the test presented in this paper require fewer configurations than any other state-of-the-art method for checking samplers' uniformity?
   + [RQ3: Samplers' uniformity](https://github.com/rheradio/ConfSystSampling/blob/main/reports/rq3_samplers_uniformity.html). Do BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 generate uniform SAT solutions?
    
