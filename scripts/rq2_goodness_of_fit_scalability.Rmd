@@ -16,6 +16,9 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 ```
+# Summary
+
+The distribution of SAT-solutions was computed with the [algorithm](https://github.com/rheradio/VMStatAnal) we presented in [@Heradio19], which takes the BDD encoding of a model as input. It is worth remarking that the model which needed the longest time was s1196a_3_2, which is an industrial SAT formula. This illustrates the dependency that BDDs have on variable ordering heuristics. Whereas this model has a medium-size CNF formula (690 variables and 1,805 clauses), the BDD we synthesized was huge (2,284,697 nodes). In contrast, for LargeAutomotive (17,365 variables and 32,1897) a more reduced BDD was obtained (30,432 nodes), and hence computing its SAT-solution distribution just took 2.74 minutes. 
 
 # Initialization
 
@@ -42,7 +45,7 @@ sessionInfo()
 ```
 
 ```{r global-constants-and-variables-initialization}
-MODELS_PATH <- "../../data"
+MODELS_PATH <- "../data"
 SAT_DIST_STATS <- "samplers_stats.csv"
 VAR_PROB_STATS <- "samplers_stats_varprob.csv"
 SAT_DIST_POPSTATS <- "population_desc_stats.csv"

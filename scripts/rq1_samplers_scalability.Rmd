@@ -15,6 +15,10 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 ```
 
+# Summary
+
+To test the samplers' scalability, they were run to generate a sample with one thousand configurations for every model in the benchmark.  The timeout for each sample generation was set to one hour. 
+
 # Initialization
 
 ## Importing packages and installing them if needed
@@ -40,7 +44,7 @@ sessionInfo()
 ```
 
 ```{r global-constants-and-variables-initialization}
-MODELS_PATH <- "../../data"
+MODELS_PATH <- "../data"
 SAT_DIST_STATS <- "samplers_stats_1000_confs.csv"
 MODELS_EXTENSIONS <-
   c("bdd", "kus", "quicksampler", "smarch", "spur", "unigen2")
@@ -56,8 +60,6 @@ FORMATTED_SPL_MODELS <- c("axTLS", "BusyBox", "DellSPLOT", "EmbToolkit", "Fiasco
 ```
 
 # Experiment results
-
-1000 configurations...
 
 ## Time for generating samples with 1,000 configurations (graphical summary)
 

@@ -17,6 +17,10 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Summary
+
+To examine the samplers' uniformity, we ran them to generate samples corresponding to $\alpha = 0.01, \beta = 0.01$, and $w = 0.1$. The timeout for each sample generation was set to one hour. In total, 373.5 hours (15.56 days) of CPU time were needed for generating the samples (or reaching the timeout).
+
 # Initialization
 
 ## Importing packages and installing them if needed
@@ -126,7 +130,7 @@ For discrete probability distributions $P$ and $Q$ defined on the same probabili
 
 $$D_\mathrm{KL}(P||Q)=\sum_{x \in \mathcal{X}} P(x)\mathrm{log}_2\Big{(}\frac{P(x)}{Q(x)}\Big{)}$$
 
-For the extreme cases, where $P(x)$ or $Q(x)$ are equal to zero, the directions given by [Drost(2018)](https://cran.r-project.org/web/packages/philentropy/index.html) are followed.
+For the extreme cases, where $P(x)$ or $Q(x)$ are equal to zero, the directions given by [Drost(2018)](https://cran.r-project.org/web/packages/philentropy/index.html) are followed to compute a numercially stable Kullback–Leibler divergence.
 
 ```{r Kullback-Leibler-Divergence}
 kullback_leibler_divergence <- function(p, q) {

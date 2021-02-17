@@ -58,8 +58,15 @@ FORMATTED_SPL_MODELS <- c("axTLS", "BusyBox", "DellSPLOT", "EmbToolkit", "Fiasco
 
 # Benchmark 
 
+The samplers were tested against a benchmark composed of 218 models encoded as Boolean formulas in all of the following formats:
 
-The samplers were tested against a benchmark composed of 218 models encoded as Boolean formulas (CNFs, BDDs, and SDDs). Nine of the 218 models represent configurable software systems. The remaining models are industrial SAT formulas (mostly modeling integrated circuits) that are typically used as a benchmark in the SAT-sampling literature [@Chakraborty15; @Achlioptas18; @Plazar19].
++ *DIMACS*, which is the format QuickSampler, Smarch, Spur, and Unigen2 use as input. These samplers rely on SAT technology, and DIMACS is the format for *Conjunctive Normal Form* (CNF) formulas that SAT technology uses.
++ *DDDMP*, which is the format BDDSampler uses for BDDs.
++ *NNF*, which is the format KUS uses for d-DNNFs.
+
+Nine of the 218 models represent configurable software systems. The remaining models are industrial SAT formulas (mostly modeling integrated circuits) that are typically used as a benchmark in the SAT-sampling literature [@Chakraborty15; @Achlioptas18; @Plazar19]. 
+
+The experiments were run on an Intel(R) Core(TM) i7-6700HQ, 2.60GHz, 16GB RAM, operating Linux Ubuntu 19.10. Samplers were executed on a single thread (i.e., with no parallelization), and without considering any Boolean formulas' preprocessing, such as formula's *Minimal Independent Support* (MIS)  [@Ivrii16].
 
 ## The number of variables and clauses are highly correlated
 
