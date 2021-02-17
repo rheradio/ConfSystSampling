@@ -48,6 +48,6 @@ Where `directory_name` is the folder that stores the models. Models can be downl
 * [Spur](https://github.com/ZaydH/spur)
 * [Unigen2](https://bitbucket.org/kuldeepmeel/unigen)
 
-Also, at the beginning of [run_samplers.r](https://github.com/rheradio/sat_sampling/blob/master/scripts/run_samplers.r) you'll have to configure the constants BDD_SAMPLER, KUS_dir, QUICK_SAMPLER, QUICK_SAMPLER_VALID, SMARCH, SPUR, UNIGEN2_dir, and UNIGEN2 according to the locations where you have installed the samplers.
+Also, at the beginning of [run_samplers.r](https://github.com/rheradio/sat_sampling/blob/master/scripts/run_samplers.r) you'll have to configure the constants `BDD_SAMPLER`, `KUS_dir`, `QUICK_SAMPLER`, `QUICK_SAMPLER_VALID`, `SMARCH`, `SPUR`, `UNIGEN2_dir`, and `UNIGEN2` according to the locations where you have installed the samplers.
 
-To run the ".Rmd" scripts [rmarkdown](https://rmarkdown.rstudio.com/articles_report_from_r_script.html) is needed
+You need [Rmarkdown](https://rmarkdown.rstudio.com/articles_report_from_r_script.html) to run the ".Rmd" scripts. In those scripts, the constant `MODELS_PATH` should point to the directory containing the samples' information. In particular, the information reported in the paper is available at  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919).
