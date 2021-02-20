@@ -283,7 +283,7 @@ for (m in models) {
         scale_fill_manual(values=c("#3388CC", "#E91E63")) +
         scale_color_manual(values=c("#3388CC", "#E91E63")) +
         geom_col(alpha=0.5, size=0.1, position="dodge2") +
-        scale_x_continuous("#True variables per SAT-solution")+#, 
+        scale_x_continuous("#True variables per\nSAT-solution")+#, 
         scale_y_continuous("Probability")+
         ggtitle(pretty_name(ext))
 
