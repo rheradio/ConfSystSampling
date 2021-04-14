@@ -5,6 +5,10 @@ Software artifacts of the following paper submitted for publication to Empirical
 *Ruben Heradio, David Fernandez-Amoros, José Galindo, David Benavides, and Don Batory*. 
 **Uniform and Scalable Sampling of Highly Configurable Systems.**
 
+## Acknowledgements
+
+This work has been partially funded by the Spanish Ministry of Science, Innovation and Universities (projects VITAL-3D DPI2016-77677-P, and OPHELIA RTI2018-101204-B-C22); the Community of Madrid (research network CAM RoboCity2030 S2013/MIT-2748);  the TASOVA network (MCIU-AEI TIN2017-90644-REDT); and the Junta de Andalucia (METAMORFOSIS project).
+
 ## Abstract
 
 Many relevant analyses on configurable software systems remain intractable because they require examining colossal and highly-constrained configuration spaces. Those analyses could be addressed through statistical inference, i.e., working with a much more tractable sample that later supports generalizing the results obtained to the entire configuration space. To make this possible, the laws of statistical inference impose an indispensable requirement: each member of the population must be equally likely to be included in the sample, i.e., the sampling process needs to be "uniform". Several SAT-samplers have been developed for generating uniform random samples at a reasonable computational cost. Unfortunately, there is a lack of experimental validation over large configuration models to show whether the samplers indeed produce genuine uniform samples or not. This paper (i) presents a new statistical test to verify to what extent samplers accomplish uniformity, (ii) proposes a new sampler named BDDSampler, and (iii) reports the evaluation of BDDSampler and other five state-of-the-art samplers: KUS, QuickSampler, Smarch, Spur, and Unigen2. According to our experimental results, only BDDSampler satisfies both scalability and uniformity.
