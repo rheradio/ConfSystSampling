@@ -28,7 +28,7 @@ To examine the samplers' uniformity, we ran them to generate samples correspondi
 ```{r package_import, results='hide', warning=FALSE}
 REQUIRED_PACKAGES <- 
   c("tidyverse", "gridExtra", "grid", "directlabels", "ggrepel","splines", 
-    "modelr", "scales", "kableExtra")
+    "modelr", "scales", "kableExtra", "gmp")
 lapply(
   REQUIRED_PACKAGES,
   function(pkg) {
