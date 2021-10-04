@@ -11,7 +11,7 @@ Many relevant analyses on configurable software systems remain intractable becau
 
 ## Acknowledgements
 
-This work has been partially funded by the Spanish Ministry of Science, Innovation and Universities (projects VITAL-3D DPI2016-77677-P, and OPHELIA RTI2018-101204-B-C22); the Community of Madrid (research network CAM RoboCity2030 S2013/MIT-2748);  the TASOVA network (MCIU-AEI TIN2017-90644-REDT); and the Junta de Andalucia (METAMORFOSIS project).
+This work has been partially funded by the Universidad Nacional de Educacion a Distancia (project OPTIVAC 096-034091 2021V/PUNED/008); the Spanish Ministry of Science, Innovation and Universities (project OPHELIA RTI2018-101204-B-C22); the Community of Madrid (research network ROBOCITY2030-DIH-CM S2018/NMT-4331);  the TASOVA network (MCIU-AEI TIN2017-90644-REDT); and the Junta de Andalucia (METAMORFOSIS project).
 
 
 ## Summary
