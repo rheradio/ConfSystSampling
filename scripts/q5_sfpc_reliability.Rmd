@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 TTwo criteria are typically used for assessing measurement quality [@Trochim15]: *validity* and *reliability*. Since we are interested in the quality of SFpC measurements, *validity* will refer to what extent SFpC actually measures uniformity, and *reliability* will refer to repeatability, i.e., to the consistency of the results obtained when SFpC is applied several times to the same sampler and model. **This report examines SFpC's reliability** with a *test-retest* strategy by comparing its results with the sample sets S2 and S3. Both sets include a sample for each sampler and model in the benchmark.
 
 
-+ S2 is avaiblate at: <a href="https://doi.org/10.5281/zenodo.5509947"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg" alt="DOI"></a>
++ S2 is avaiblate at: <a href="https://doi.org/10.5281/zenodo.4514919"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg" alt="DOI"></a>
 + S3 is avaiblate at: <a href="https://doi.org/10.5281/zenodo.5509947"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg" alt="DOI"></a>
 
 # Initialization: Importing packages and installing them if needed
