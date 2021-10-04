@@ -26,7 +26,7 @@ This repository is organized into two main directories:
   + [Q4: SFpC's validity](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q4_sfpc_validity.html). Does SFpC produce results consistent with the results obtained by other uniformity testing methods?
   + [Q5: SFpC's reliability](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q5_sfpc_reliability.html). When SFpC is applied repeatedly to the same model and sampler, are the results consistent?
    
-The [benchmark]((https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/benchmark.html) we used, and all the samples generated are available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919) and [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg)](https://doi.org/10.5281/zenodo.5509947). In these repositories, there is a zip file per model, which is organized into the following directories:
+The [benchmark](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/benchmark.html) we used, and all the samples generated are available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919) and [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg)](https://doi.org/10.5281/zenodo.5509947). In these repositories, there is a zip file per model, which is organized into the following directories:
 
 * `bool_formula`: includes the model's Boolean encoding as a BDD (`.dddmp`) and a CNF (`.dimacs`).
 * `goodness_of_fit`: includes a graphical analysis of the model's goodness-of-fit.
