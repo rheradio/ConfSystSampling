@@ -19,14 +19,14 @@ This work has been partially funded by the Universidad Nacional de Educacion a D
 This repository is organized into two main directories:
 
 * [scripts](https://github.com/rheradio/ConfSystSampling/tree/main/scripts), includes the R scripts to replicate our experimental validation (i.e., to calculate each model's sample size, run the samplers, and test the scalability/uniformity of the samplers).
-* [reports](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/index.html), includes the detailed experimental results we performed to answer the following research questions:
+* [reports](https://github.com/rheradio/ConfSystSampling/tree/main/reports), includes the detailed experimental results we performed to answer the following research questions:
   + [Q1: Samplers’ scalability](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q1_samplers_scalability.html). Are BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 able to generate samples with 1,000 configurations out of any size models within one hour?
   + [Q2: Samplers’ uniformity](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q2_samplers_uniformity.html). Do BDDSampler, KUS,  QuickSampler, Smarch, Spur, or Unigen2 always generate uniform SAT solutions?
   + [Q3: SFpC’s scalability](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q3_sfpc_scalability.html). How much time and how many configurations does SFpC need to check the uniformity of a sampler on a model?
   + [Q4: SFpC's validity](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q4_sfpc_validity.html). Does SFpC produce results consistent with the results obtained by other uniformity testing methods?
   + [Q5: SFpC's reliability](https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/q5_sfpc_reliability.html). When SFpC is applied repeatedly to the same model and sampler, are the results consistent?
    
-The benchmark we used, and all the samples generated are available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919) and [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg)](https://doi.org/10.5281/zenodo.5509947). In these repositories, there is a zip file per model, which is organized into the following directories:
+The [benchmark]((https://htmlpreview.github.io/?https://github.com/rheradio/ConfSystSampling/blob/main/reports/benchmark.html) we used, and all the samples generated are available at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg)](https://doi.org/10.5281/zenodo.4514919) and [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg)](https://doi.org/10.5281/zenodo.5509947). In these repositories, there is a zip file per model, which is organized into the following directories:
 
 * `bool_formula`: includes the model's Boolean encoding as a BDD (`.dddmp`) and a CNF (`.dimacs`).
 * `goodness_of_fit`: includes a graphical analysis of the model's goodness-of-fit.
