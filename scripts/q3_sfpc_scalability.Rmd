@@ -1,5 +1,5 @@
 ---
-title: 'RQ2: Scalability of the proposed goodness-of-fit test based on examining the SAT-solution distribution'
+title: "Q3: SFpC's scalability"
 author: "Ruben Heradio (rheradio@issi.uned.es)"
 date: "Date: `r Sys.Date()`"
 output:
@@ -121,9 +121,7 @@ spl_models <- spl_models %>%
 kbl(spl_models, format="latex", align="l", booktabs =TRUE)
 ```
 
-# Comparing the SAT-solution distribution test with the variable probability test
-
-See ... [@Heradio20]
+# Comparing the Selected Features per Configuration (SFpC) test with the Feature  Probability (FP) test
 
 ```{r read-experimental-data}
 sat_dist_stats <- read_delim(
@@ -191,9 +189,9 @@ sample_size_comparison <- tibble(
   vars = c(sat_dist_stats$vars, 
            var_prob_stats$vars),
   pred = c(sat_dist_stats$pred, var_prob_stats$pred),
-  method = factor(c(rep("SAT-solution distribution", nrow(sat_dist_stats)), 
-                        rep("Variable probabilities", nrow(var_prob_stats))),
-                     levels = c("Variable probabilities", "SAT-solution distribution"))
+  method = factor(c(rep("SFpC test", nrow(sat_dist_stats)), 
+                        rep("FP test", nrow(var_prob_stats))),
+                     levels = c("FP test", "SFpC test"))
 )
 
 # Get tibbles for tagging configuration models
@@ -225,7 +223,7 @@ ggplot(sample_size_comparison, aes(x=vars, y=sample_size)) +
   labs(
     x = expression(Log[2]("#Variables")),
     y = expression(Log[2]("Sample size")),
-    subtitle = "The SAT-solution distribution test requires smaller\nsamples than the one based on variable probabilities",
+    subtitle = "The SFpC test requires smaller samples than the FP test",
     color = ""
   )  
 ggsave("sat_dist_vs_var_prob.pdf", width = 4.5, height = 3.5)

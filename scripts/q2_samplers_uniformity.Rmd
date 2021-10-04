@@ -1,5 +1,5 @@
 ---
-title: "RQ3: Samplers' uniformity"
+title: "Q2: Samplers' uniformity"
 author: "Ruben Heradio (rheradio@issi.uned.es)"
 date: "Date: `r Sys.Date()`"
 output:
@@ -21,6 +21,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 To examine the samplers' uniformity, we ran them to generate samples corresponding to $\alpha = 0.01, \beta = 0.01$, and $w = 0.1$. The timeout for each sample generation was set to one hour. In total, 373.5 hours (15.56 days) of CPU time were needed for generating the samples (or reaching the timeout).
 
+The samples are avialable at:
+<a href="https://doi.org/10.5281/zenodo.4514919"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4514919.svg" alt="DOI"></a>
+
 # Initialization
 
 ## Importing packages and installing them if needed
@@ -28,7 +31,7 @@ To examine the samplers' uniformity, we ran them to generate samples correspondi
 ```{r package_import, results='hide', warning=FALSE}
 REQUIRED_PACKAGES <- 
   c("tidyverse", "gridExtra", "grid", "directlabels", "ggrepel","splines", 
-    "modelr", "scales", "kableExtra", "gmp")
+    "modelr", "scales", "kableExtra")
 lapply(
   REQUIRED_PACKAGES,
   function(pkg) {
@@ -261,7 +264,7 @@ for (m in models) {
     X2 <- 2*sample_size*log(2)*jsd
     degrees_of_freedom <- nrow(distributions)-1
     p_value <- 1-pchisq(X2, degrees_of_freedom)
-    
+    p_value
     # Store jsd and p_values in their corresponding variables
     eval(parse(text=str_c(ext, "_jsd <- ", jsd)))
     eval(parse(text=str_c(ext, "_p_value <- ", p_value)))

@@ -1,5 +1,5 @@
 ---
-title: "RQ1: Samplers' scalability"
+title: "Q1: Samplers' scalability"
 author: "Ruben Heradio (rheradio@issi.uned.es)"
 date: "Date: `r Sys.Date()`"
 output:

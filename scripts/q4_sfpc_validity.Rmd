@@ -1,0 +1,101 @@
+---
+title: "Q4: SFpC's validity"
+author: "Ruben Heradio (rheradio@issi.uned.es)"
+date: "Date: `r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    theme: journal
+bibliography: references.bib    
+csl: ieee.csl     
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+```
+
+# Summary
+
+Two criteria are typically used for assessing measurement quality [@Trochim15]: *validity* and *reliability*. Since we are interested in the quality of SFpC measurements, *validity* will refer to what extent SFpC actually measures uniformity, and *reliability* will refer to repeatability, i.e., to the consistency of the results obtained when SFpC is applied several times to the same sampler and model. **This report examines SFpC's validity**.
+
+To evaluate SFpC's validity, we followed a *convergent strategy* by examining the degree to which SFpC results are similar to those obtained by other uniformity tests.
+
+We performed a new Experiment E3 focused on checking the convergent validity of FP and SFpC in detail. A new sample set S3 was got by asking each sampler to generate a sample for every model in the benchmark. Then, the uniformity of the samples was analyzed with both FP and SFpC. Since FP generally needs larger samples than SFpC, the sample sizes were set according to FP requirements.
+
+S3 is available at: 
+<a href="https://doi.org/10.5281/zenodo.5509947"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5509947.svg" alt="DOI"></a>
+
+
+# Initialization
+
+## Importing packages and installing them if needed
+
+```{r package_import, results='hide', warning=FALSE}
+REQUIRED_PACKAGES <- 
+  c("tidyverse", "irr")
+lapply(
+  REQUIRED_PACKAGES,
+  function(pkg) {
+    print(pkg)
+    if (system.file(package = pkg) == "") {
+      install.packages(pkg,
+                       repos = "http://cran.us.r-project.org"
+      )
+    }
+    do.call("library", list(pkg))
+  }
+)
+```
+```{r}
+sessionInfo()
+```
+
+```{r global-constants-and-variables-initialization}
+S3_DIR <- "../S3/"
+```
+
+
+# Does SFpC produce valid results?
+
+```{r }
+S3_results <- read.csv(str_c(S3_DIR, "pvalues.csv"), sep=";")
+
+all_S3_results <- tibble(
+  sfpc = c(
+    S3_results$bdd_satdist_p,
+    S3_results$kus_satdist_p,
+    S3_results$quicksampler_satdist_p,
+    S3_results$smarch_satdist_p,
+    S3_results$spur_satdist_p,
+    S3_results$unigen2_satdist_p
+  ),
+  fp = c(
+    S3_results$bdd_varprob_p,
+    S3_results$kus_varprob_p,
+    S3_results$quicksampler_varprob_p,
+    S3_results$smarch_varprob_p,
+    S3_results$spur_varprob_p,
+    S3_results$unigen2_varprob_p  
+  )
+)
+
+# p-values correlation
+writeLines("Assessing the p-values' correlation")
+writeLines("Pearson correlation coefficient")
+cor(all_S3_results$sfpc, 
+    all_S3_results$fp, 
+    use = "complete.obs")
+
+# Nominal consistency 
+writeLines("Assessing the consistency of the uniformity verdict")
+all_S3_results <- 
+  modify(all_S3_results[1:2], 
+       ~ ifelse(.x <= 0.01, 0, 1))
+agree(all_S3_results, tolerance=0)
+kappa2(all_S3_results)
+```
+
+# References
