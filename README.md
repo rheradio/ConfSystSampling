@@ -1,9 +1,8 @@
 # Uniform and Scalable Sampling of Highly Configurable Systems
 
-Software artifacts of the following paper submitted for publication to Empirical Software Engineering (2021):
+Software artifacts of the paper:
 
-*Ruben Heradio, David Fernandez-Amoros, José Galindo, David Benavides, and Don Batory*. 
-**Uniform and Scalable Sampling of Highly Configurable Systems.**
+[*R. Heradio, D. Fernandez-Amoros, J. Galindo, D. Benavides, and D. Batory, "Uniform and Scalable Sampling of Highly Configurable Systems", Empirical Software Engineering, vol. 27, no. 44, 2022.*](https://doi.org/10.1007/s10664-021-10102-5)
 
 ## Abstract
 
